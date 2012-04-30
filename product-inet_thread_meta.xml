@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<product productid="inet_thread_meta" active="1">
+	<title>iNET Thread Meta</title>
+	<description>Allows for storage of meta data for individual threads</description>
+	<version>1.0</version>
+	<url>http://www.inetinteractive.com</url>
+	<versioncheckurl />
+	<dependencies>
+	</dependencies>
+	<codes>
+		<code version="1.0">
+			<installcode><![CDATA[
+				$vbulletin->db->hide_errors();
+				
+				// Create table for storing thread summaries
+				$vbulletin->db->query_write("
+					CREATE TABLE IF NOT EXISTS `" . TABLE_PREFIX . "inet_thread_meta` (
+						`metaid` int(10) unsigned NOT NULL AUTO_INCREMENT,
+						`threadid` int(10) unsigned NOT NULL,
+						`meta_key` varchar(255) CHARACTER SET utf8 DEFAULT NULL,
+						`meta_value` longtext CHARACTER SET utf8,
+						PRIMARY KEY (`metaid`),
+						UNIQUE KEY `threadid_2` (`threadid`,`meta_key`),
+						KEY `threadid` (`threadid`),
+						KEY `meta_key` (`meta_key`)
+					)
+
+				");
+				
+				$vbulletin->db->show_errors();
+			]]></installcode>
+			<uninstallcode></uninstallcode>
+		</code>
+	</codes>
+	<templates>
+	</templates>
+	<plugins>
+		<plugin active="1" executionorder="5">
+			<title>Fetch Thread Meta Data</title>
+			<hookname>fetch_threadinfo</hookname>
+			<phpcode><![CDATA[
+				$inetThreadMetaRs = $vbulletin->db->query_read("
+					SELECT
+						thread_meta.metaid,
+						thread_meta.threadid,
+						thread_meta.meta_key,
+						thread_meta.meta_value
+					FROM " . TABLE_PREFIX . "inet_thread_meta AS thread_meta
+					WHERE
+						thread_meta.threadid = $threadid
+				");
+
+				$inetThreadMeta = array();
+				while ($inetThreadMetaRow = $vbulletin->db->fetch_array($inetThreadMetaRs)) {
+					$inetThreadMeta[$inetThreadMetaRow['meta_key']] = $inetThreadMetaRow['meta_value'];
+				}
+
+				if (!empty($inetThreadMeta)) {
+					$threadcache["$threadid"] = array_merge($threadcache["$threadid"], $inetThreadMeta);
+				}
+			]]></phpcode>
+		</plugin>
+	</plugins>
+	<phrases>
+	</phrases>
+	<options>
+	</options>
+	<helptopics>
+	</helptopics>
+	<cronentries>
+	</cronentries>
+	<faqentries>
+	</faqentries>
+</product>
