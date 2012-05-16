@@ -15,15 +15,15 @@
 				
 				// Create table for storing thread summaries
 				$vbulletin->db->query_write("
-					CREATE TABLE IF NOT EXISTS `" . TABLE_PREFIX . "inet_thread_meta` (
+					CREATE TABLE IF NOT EXISTS `" . TABLE_PREFIX . "threadmeta` (
 						`metaid` int(10) unsigned NOT NULL AUTO_INCREMENT,
 						`threadid` int(10) unsigned NOT NULL,
-						`meta_key` varchar(255) CHARACTER SET utf8 DEFAULT NULL,
-						`meta_value` longtext CHARACTER SET utf8,
+						`key` varchar(255) CHARACTER SET utf8 DEFAULT NULL,
+						`value` longtext CHARACTER SET utf8,
 						PRIMARY KEY (`metaid`),
-						UNIQUE KEY `threadid_2` (`threadid`,`meta_key`),
+						UNIQUE KEY `threadid_2` (`threadid`, `key`),
 						KEY `threadid` (`threadid`),
-						KEY `meta_key` (`meta_key`)
+						KEY `key` (`key`)
 					)
 
 				");
@@ -42,18 +42,18 @@
 			<phpcode><![CDATA[
 				$inetThreadMetaRs = $vbulletin->db->query_read("
 					SELECT
-						thread_meta.metaid,
-						thread_meta.threadid,
-						thread_meta.meta_key,
-						thread_meta.meta_value
-					FROM " . TABLE_PREFIX . "inet_thread_meta AS thread_meta
+						threadmeta.metaid,
+						threadmeta.threadid,
+						threadmeta.key,
+						threadmeta.value
+					FROM " . TABLE_PREFIX . "threadmeta
 					WHERE
-						thread_meta.threadid = $threadid
+						threadmeta.threadid = $threadid
 				");
 
 				$inetThreadMeta = array();
 				while ($inetThreadMetaRow = $vbulletin->db->fetch_array($inetThreadMetaRs)) {
-					$inetThreadMeta[$inetThreadMetaRow['meta_key']] = $inetThreadMetaRow['meta_value'];
+					$inetThreadMeta[$inetThreadMetaRow['key']] = $inetThreadMetaRow['value'];
 				}
 
 				if (!empty($inetThreadMeta)) {
